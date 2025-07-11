@@ -74,7 +74,10 @@ This feature provides tools that let you integrate automated DevOps tools such a
 git clone https://github.com/Inflectra/mcp-server-spira.git
 cd mcp-server-spira
 
-# Install in development mode
+# Simple development mode install
+pip install -e .
+
+# Install into a virtual development environment (you may need to create one with uv venv)
 uv pip install -e ".[dev]"
 
 # Install from PyPi

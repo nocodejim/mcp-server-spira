@@ -22,6 +22,9 @@ def format_incident(incident) -> str:
 - **Priority:** {incident['PriorityName']}
 - **Severity:** {incident['SeverityName']}
 - **Due Date:** {incident['StartDate']}
+{'' if incident['DetectedReleaseId'] is None else '- **Detected in Release:** ' + str(incident['DetectedReleaseId'])}
+{'' if incident['ResolvedReleaseId'] is None else '- **Planned for Release:** ' + str(incident['ResolvedReleaseId'])}
+{'' if incident['VerifiedReleaseId'] is None else '- **Verified in Release:** ' + str(incident['VerifiedReleaseId'])}
 """
     return incident_info
 
