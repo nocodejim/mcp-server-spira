@@ -34,14 +34,27 @@ def _get_specification_requirements(spira_client, product_id: int, release_id: i
         starting_row = 1
         number_of_rows = 250
         more_results = True
-        while more_results:
-            requirements_url = f"projects/{product_id}/requirements?starting_row={starting_row}&number_of_rows={number_of_rows}"
-            results = spira_client.make_spira_api_get_request(requirements_url)
-            if not results:
-                more_results = False
-            else:
-                starting_row += number_of_rows
-            requirements.extend(results)
+
+        # See if we are filtering by release or not
+        if release_id:
+            while more_results:
+                requirements_url = f"projects/{product_id}/requirements/search?starting_row={starting_row}&number_of_rows={number_of_rows}"
+                body = [{'PropertyName': 'ReleaseId', 'IntValue': release_id}]
+                results = spira_client.make_spira_api_post_request(requirements_url, body)
+                if not results:
+                    more_results = False
+                else:
+                    starting_row += number_of_rows
+                requirements.extend(results)
+        else:
+            while more_results:
+                requirements_url = f"projects/{product_id}/requirements?starting_row={starting_row}&number_of_rows={number_of_rows}"
+                results = spira_client.make_spira_api_get_request(requirements_url)
+                if not results:
+                    more_results = False
+                else:
+                    starting_row += number_of_rows
+                requirements.extend(results)
 
         return requirements
     except Exception as e:
