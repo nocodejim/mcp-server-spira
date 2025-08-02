@@ -7,7 +7,7 @@ This module provides MCP tools for retrieving and updating products (also known 
 from mcp_server_spira.features.formatting import format_product
 from mcp_server_spira.features.common import get_spira_client
 
-def _get_products_by_id_impl(spira_client, product_id: int) -> str:
+def _get_product_by_id_impl(spira_client, product_id: int) -> str:
     """
     Implementation of retrieving a single Spira product by its ID
 
@@ -143,7 +143,7 @@ def register_tools(mcp) -> None:
         """
         try:
             spira_client = get_spira_client()
-            return _get_products_by_id_impl(spira_client, product_id)
+            return _get_product_by_id_impl(spira_client, product_id)
         except Exception as e:
             return f"Error: {str(e)}"
 
