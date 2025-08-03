@@ -181,6 +181,45 @@ def _add_requirement_test_cases(spira_client, product_id: int, requirement_id: i
 
         formatted_specification.append('\n')
 
+def _add_requirement_tasks(spira_client, product_id: int, requirement_id: int, formatted_specification: list[str]):
+    """
+    Gets the list of tasks for a requirement and adds them to the output
+
+    Args:
+        spira_client: The Inflectra Spira API client instance
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
+        requirement_id: The numeric ID of the requirement. If the ID is RQ:12, just use 12
+        formatted_specification: The output text in markdown format
+    """
+    tasks = []
+    starting_row = 1
+    number_of_rows = 250
+    more_results = True
+    body = [{'PropertyName': 'RequirementId', 'IntValue': requirement_id}]
+
+    while more_results:
+        tasks_url = f"projects/{product_id}/tasks?starting_row={starting_row}&number_of_rows={number_of_rows}&sort_field=StartDate&sort_direction=ASC"
+        results = spira_client.make_spira_api_post_request(tasks_url, body)
+        if not results:
+            more_results = False
+        else:
+            starting_row += number_of_rows
+        tasks.extend(results)
+
+
+    if tasks:
+        formatted_specification.append('#### Tasks\n\n')
+        for task in tasks:
+            task_id = task['TaskId']            
+            name = task['Name']
+            formatted_specification.append(f"##### Task TK:{task_id}: {task['Name']}\n")
+            if task['Description']:
+                description = f"**{task['TaskTypeName']}:** {task['Description']}\n"
+                formatted_specification.append(description)    
+            formatted_specification.append('\n')
+
+        formatted_specification.append('\n')
+
 def _get_specification_risks(spira_client, product_id: int, release_id: int | None) -> list[Any]:
     """
     Gets the list of risks in the product/release
@@ -322,6 +361,16 @@ def _get_specification_impl(spira_client, product_id: int, release_id: int | Non
         # Create the sub-header for the Tasks.md section
         formatted_specification.append('\n')
         formatted_specification.append(f'## Implementation Plan')
+
+        # Loop through the requirements and add the tasks
+        if requirements:
+            # Format the requirements into human readable data
+            for requirement in requirements:
+                requirement_id = requirement['RequirementId']
+                formatted_specification.append(f"### Requirement RQ:{requirement_id}: {requirement['Name']}\n")
+
+                # See if we have any defined tasks for this requirement
+                _add_requirement_tasks(spira_client, product_id, requirement_id, formatted_specification)
 
         return "\n".join(formatted_specification)
     
