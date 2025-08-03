@@ -137,6 +137,107 @@ def _add_requirement_test_cases(spira_client, product_id: int, requirement_id: i
         requirement_id: The numeric ID of the requirement. If the ID is RQ:12, just use 12
         formatted_specification: The output text in markdown format
     """
+    req_test_cases_url = f"projects/{product_id}/requirements/{requirement_id}/test-cases"
+    req_test_cases = spira_client.make_spira_api_get_request(req_test_cases_url)
+    if req_test_cases:
+        formatted_specification.append('#### Test Cases\n\n')
+        for req_test_case in req_test_cases:
+            test_case_id = req_test_case['TestCaseId']
+
+            # Get the full details of the test case
+            test_case_url = f"projects/{product_id}/test-cases/{test_case_id}"
+            test_case = spira_client.make_spira_api_get_request(test_case_url)
+            
+            if test_case:
+                name = test_case['Name']
+                formatted_specification.append(f"##### Test Case TC:{test_case_id}: {test_case['Name']}\n")
+                if test_case['Description']:
+                    description = f"**{test_case['TestCaseTypeName']}:** {test_case['Description']}\n"
+                    formatted_specification.append(description)    
+                formatted_specification.append('\n')
+
+                # Get the test case steps
+                test_steps_url = f"projects/{product_id}/test-cases/{test_case_id}/test-steps"
+                test_steps = spira_client.make_spira_api_get_request(test_steps_url)
+
+                # Format the test steps as a table
+                if test_steps:
+                    formatted_specification.append('##### Steps\n\n')
+                    formatted_specification.append("<table>")
+                    formatted_specification.append("<tr><th>Step #</th><th>Description</th><th>Expected Result</th><th>Sample Data</th></tr>")
+                    for test_step in test_steps:
+                        test_step_id = test_step['TestStepId']
+                        position = test_step['Position']
+                        description = test_step['Description']
+                        expected_result = test_step['ExpectedResults']
+                        sample_data = test_step['SampleData']
+                        formatted_specification.append("<tr>")
+                        formatted_specification.append(f"<td>{position}.</td>")
+                        formatted_specification.append(f"<td>{description}.</td>")
+                        formatted_specification.append(f"<td>{expected_result}.</td>")
+                        formatted_specification.append(f"<td>{sample_data}.</td>")
+                        formatted_specification.append("</tr>")
+                    formatted_specification.append("</table>")
+
+        formatted_specification.append('\n')
+
+def _get_specification_risks(spira_client, product_id: int, release_id: int | None) -> list[Any]:
+    """
+    Gets the list of risks in the product/release
+
+    Args:
+        spira_client: The Inflectra Spira API client instance
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
+        release_id: The numeric ID of the release. If the ID is RL:12, just use 12. (optional)
+                
+    Returns:
+        List of risks
+    """
+    try:
+        risks = []
+        starting_row = 1
+        number_of_rows = 250
+        more_results = True
+        body = []
+
+        # See if we are filtering by release or not
+        if release_id:
+            body = [{'PropertyName': 'ReleaseId', 'IntValue': release_id}]
+
+        while more_results:
+            risks_url = f"projects/{product_id}/risks?starting_row={starting_row}&number_of_rows={number_of_rows}&sort_field=RiskExposure&sort_direction=DESC"
+            results = spira_client.make_spira_api_post_request(risks_url, body)
+            if not results:
+                more_results = False
+            else:
+                starting_row += number_of_rows
+            risks.extend(results)
+
+
+        return risks
+    except Exception as e:
+        raise e
+
+def _add_risk_mitigations(spira_client, product_id: int, risk_id: int, formatted_specification: list[str]):
+    """
+    Gets the list of mitigations for a risk and adds them to the output
+
+    Args:
+        spira_client: The Inflectra Spira API client instance
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
+        risk_id: The numeric ID of the risk. If the ID is RK:12, just use 12
+        formatted_specification: The output text in markdown format
+    """
+    mitigations_url = f"projects/{product_id}/risks/{risk_id}/mitigations"
+    mitigations = spira_client.make_spira_api_get_request(mitigations_url)
+    if mitigations:
+        formatted_specification.append('#### Mitigations\n\n')
+        for mitigation in mitigations:
+            position = mitigation['Position']
+            description =mitigation['Description']
+            text = f"{position}. {description}\n"
+            formatted_specification.append(text)
+        formatted_specification.append('\n')
 
 def _get_specification_impl(spira_client, product_id: int, release_id: int | None) -> str:
     """
@@ -182,27 +283,41 @@ def _get_specification_impl(spira_client, product_id: int, release_id: int | Non
         # Get the list of requirements in the product, or just the release
         requirements = _get_specification_requirements(spira_client, product_id, release_id)
 
-        if not requirements:
-            return "There are no requirements for the product."
+        if requirements:
+            # Format the requirements into human readable data
+            for requirement in requirements:
+                requirement_id = requirement['RequirementId']
+                formatted_specification.append(f"### Requirement RQ:{requirement_id}: {requirement['Name']}\n")
+                if requirement['Description']:
+                    description = f"**{requirement['RequirementTypeName']}:** {requirement['Description']}\n"
+                    formatted_specification.append(description)    
+                formatted_specification.append('\n')
 
-        # Format the requirements into human readable data
-        for requirement in requirements:
-            requirement_id = requirement['RequirementId']
-            formatted_specification.append(f"### Requirement RQ:{requirement_id}: {requirement['Name']}\n")
-            if requirement['Description']:
-                description = f"**{requirement['RequirementTypeName']}:** {requirement['Description']}\n"
-                formatted_specification.append(description)    
-            formatted_specification.append('\n')
+                # See if we have any scenarios for this requirement
+                _add_requirement_scenarios(spira_client, product_id, requirement_id, formatted_specification)
 
-            # See if we have any scenarios for this requirement
-            _add_requirement_scenarios(spira_client, product_id, requirement_id, formatted_specification)
-
-            # See if we have any defined test cases for this requirement
-            _add_requirement_test_cases(spira_client, product_id, requirement_id, formatted_specification)
+                # See if we have any defined test cases for this requirement
+                _add_requirement_test_cases(spira_client, product_id, requirement_id, formatted_specification)
 
         # Create the sub-header for the Design.md section
         formatted_specification.append('\n')
         formatted_specification.append(f'## Design Document')
+
+        # Get the list of risks in the product, or just the release
+        risks = _get_specification_risks(spira_client, product_id, release_id)
+
+        if risks:
+            # Format the risks into human readable data
+            for risk in risks:
+                risk_id = risk['RiskId']
+                formatted_specification.append(f"### Risk RK:{risk_id}: {risk['Name']}\n")
+                if risk['Description']:
+                    description = f"**{risk['RiskTypeName']}:** {risk['Description']}\n"
+                    formatted_specification.append(description)    
+                formatted_specification.append('\n')
+
+                # See if we have any mitigations for this risk
+                _add_risk_mitigations(spira_client, product_id, risk_id, formatted_specification)
 
         # Create the sub-header for the Tasks.md section
         formatted_specification.append('\n')
