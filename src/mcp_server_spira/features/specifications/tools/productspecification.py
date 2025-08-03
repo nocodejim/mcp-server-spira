@@ -12,8 +12,12 @@ the following files:
 This module provides MCP tools for retrieving entire product specifications
 """
 
+from mcp.server.fastmcp.utilities.logging import get_logger
 from mcp_server_spira.features.common import get_spira_client
 from typing import Any
+
+# Get a logger instance, typically named after the current module
+logger = get_logger(__name__)
 
 def _get_product_by_id(spira_client, product_id: int) -> Any:
     """
@@ -28,7 +32,7 @@ def _get_product_by_id(spira_client, product_id: int) -> Any:
     """
     try:
         # Get the product by its ID
-        product_url = "projects/{product_id}"
+        product_url = f"projects/{product_id}"
         product = spira_client.make_spira_api_get_request(product_url)
 
         if not product:
@@ -169,7 +173,7 @@ def _add_requirement_test_cases(spira_client, product_id: int, requirement_id: i
                         test_step_id = test_step['TestStepId']
                         position = test_step['Position']
                         description = test_step['Description']
-                        expected_result = test_step['ExpectedResults']
+                        expected_result = test_step['ExpectedResult']
                         sample_data = test_step['SampleData']
                         formatted_specification.append("<tr>")
                         formatted_specification.append(f"<td>{position}.</td>")
@@ -296,6 +300,7 @@ def _get_specification_impl(spira_client, product_id: int, release_id: int | Non
         formatted_specification = []
 
         # Get the product information
+        logger.info("Getting the product overview")
         product = _get_product_by_id(spira_client, product_id)
         product_name = product['Name']
 

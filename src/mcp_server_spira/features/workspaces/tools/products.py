@@ -20,7 +20,7 @@ def _get_product_by_id_impl(spira_client, product_id: int) -> str:
     """
     try:
         # Get the product by its ID
-        product_url = "projects/{product_id}"
+        product_url = f"projects/{product_id}"
         product = spira_client.make_spira_api_get_request(product_url)
 
         if not product:
