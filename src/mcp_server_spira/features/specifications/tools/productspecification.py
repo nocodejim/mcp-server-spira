@@ -1,6 +1,7 @@
 """
-Provides operations for retrieving an entire product specification that spans multiple
-Spira artifacts. This is used by Agentic AI development tools such as Amazon Kiro
+Provides operations for retrieving the product specification files that
+can be used to build the functionality of the product using AI. 
+This is used by Agentic AI development tools such as Amazon Kiro
 for building applications from a formal spec.
 
 A product specification consists of the data in markdown format used by Kiro to generate
@@ -9,7 +10,10 @@ the following files:
     - design.md - Documents technical architecture, sequence diagrams, and implementation considerations
     - tasks.md - Provides a detailed implementation plan with discrete, trackable tasks
 
-This module provides MCP tools for retrieving entire product specifications
+This module provides the following MCP tools for retrieving the entire product specifications:
+    - get_specification_requirements - returns the data for populating the requirements.md file
+    - get_specification_design - returns the data for populating the design.md file
+    - get_specification_tasks - returns the data for populating the tasks.md file
 """
 
 from mcp.server.fastmcp.utilities.logging import get_logger
@@ -282,9 +286,9 @@ def _add_risk_mitigations(spira_client, product_id: int, risk_id: int, formatted
             formatted_specification.append(text)
         formatted_specification.append('\n')
 
-def _get_specification_impl(spira_client, product_id: int, release_id: int | None) -> str:
+def _get_specification_requirements_impl(spira_client, product_id: int, release_id: int | None) -> str:
     """
-    Implementation of retrieving the markdown specification for the specified product
+    Implementation of retrieving the requirements markdown specification for the specified product
 
     Args:
         spira_client: The Inflectra Spira API client instance
@@ -294,7 +298,7 @@ def _get_specification_impl(spira_client, product_id: int, release_id: int | Non
                     project is returned 
                 
     Returns:
-        Formatted string containing the product specification
+        Formatted string containing the product requirements specification
     """
     try:
         formatted_specification = []
@@ -342,6 +346,8 @@ def _get_specification_impl(spira_client, product_id: int, release_id: int | Non
 
                 # See if we have any defined test cases for this requirement
                 _add_requirement_test_cases(spira_client, product_id, requirement_id, formatted_specification)
+
+        return "\n".join(formatted_specification)
 
         # Create the sub-header for the Design.md section
         formatted_specification.append('\n')
@@ -391,19 +397,14 @@ def register_tools(mcp) -> None:
     """
 
     @mcp.tool()
-    def get_specification(product_id: int, release_id: int | None) -> str:
+    def get_specification_requirements(product_id: int, release_id: int | None) -> str:
         """
-        Retrieves the complete specification for the requested Spira product,
+        Retrieves the requirements specification file for the requested Spira product,
         with the option to only return the specification for a selected product
         release.
         
-        Use this tool when you need to download a full product specification so that
-        it can be used in an agentic development environment such as Amazon Kiro
-
-        The returned specification markdown is broken down into the following three sections:
-            - Requirements - Captures user stories and acceptance criteria in structured EARS notation
-            - Design - Documents technical architecture, sequence diagrams, and implementation considerations
-            - Tasks - Provides a detailed implementation plan with discrete, trackable tasks
+        Use this tool when you need to download the requirements part of a product specification
+        so that it can be used in an agentic development environment such as Amazon Kiro
 
         Args:
             product_id: The numeric ID of the product. If the ID is PR:45, just use 45.
@@ -412,11 +413,41 @@ def register_tools(mcp) -> None:
                         project is returned 
         
         Returns:
-            Formatted string in markdown that contains the full specification for the requested
+            Formatted string in markdown that contains the requirements specification for the requested
             Spira product (or just the specific release in that product).
+
+            The data returned should be saved into a file called requirements.md
         """
         try:
             spira_client = get_spira_client()
-            return _get_specification_impl(spira_client, product_id, release_id)
+            return _get_specification_requirements_impl(spira_client, product_id, release_id)
+        except Exception as e:
+            return f"Error: {str(e)}"
+        
+    @mcp.tool()
+    def get_specification_requirements(product_id: int, release_id: int | None) -> str:
+        """
+        Retrieves the requirements specification file for the requested Spira product,
+        with the option to only return the specification for a selected product
+        release.
+        
+        Use this tool when you need to download the requirements part of a product specification
+        so that it can be used in an agentic development environment such as Amazon Kiro
+
+        Args:
+            product_id: The numeric ID of the product. If the ID is PR:45, just use 45.
+            release_id: The numeric ID of the release. If the ID is RL:12, just use 12.
+                        If no release is specified, then the specification for the entire
+                        project is returned 
+        
+        Returns:
+            Formatted string in markdown that contains the requirements specification for the requested
+            Spira product (or just the specific release in that product).
+
+            The data returned should be saved into a file called requirements.md
+        """
+        try:
+            spira_client = get_spira_client()
+            return _get_specification_requirements_impl(spira_client, product_id, release_id)
         except Exception as e:
             return f"Error: {str(e)}"
