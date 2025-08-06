@@ -199,21 +199,21 @@ def _add_requirement_tasks(spira_client, product_id: int, requirement_id: int, f
         requirement_id: The numeric ID of the requirement. If the ID is RQ:12, just use 12
         formatted_specification: The output text in markdown format
     """
+
+    # First, get the count of the number of total matching tasks
+    body = [{'PropertyName': 'RequirementId', 'IntValue': requirement_id}]
+    tasks_url = f"projects/{product_id}/tasks/count "
+    task_count = spira_client.make_spira_api_post_request(tasks_url, body)
+
+    # Next, get all of the tasks using pagination
     tasks = []
     starting_row = 1
     number_of_rows = 250
-    more_results = True
-    body = [{'PropertyName': 'RequirementId', 'IntValue': requirement_id}]
-
-    while more_results:
+    while starting_row < task_count:
         tasks_url = f"projects/{product_id}/tasks?starting_row={starting_row}&number_of_rows={number_of_rows}&sort_field=StartDate&sort_direction=ASC"
         results = spira_client.make_spira_api_post_request(tasks_url, body)
-        if not results:
-            more_results = False
-        else:
-            starting_row += number_of_rows
+        starting_row += number_of_rows
         tasks.extend(results)
-
 
     if tasks:
         formatted_specification.append('#### Tasks\n\n')
