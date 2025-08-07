@@ -59,6 +59,18 @@ This feature provides tools that let you integrate automated DevOps tools such a
 - **Automated Test Runs:** Provides operations for recording automated test run results into Spira
 - **Builds:** Provides operations for recording the results of CI/CD builds into Spira
 
+### Specifications
+Provides operations for retrieving the product specification files that
+can be used to build the functionality of the product using AI. 
+This is used by Agentic AI development tools such as Amazon Kiro
+for building applications from a formal spec.
+
+This module provides the following MCP tools for retrieving the entire product specifications:
+- **get_specification_requirements** - returns the data for populating the `requirements.md` file
+- **get_specification_design** - returns the data for populating the `design.md` file
+- **get_specification_tasks** - returns the data for populating the `tasks.md` file
+- **get_specification_test_cases** - returns the data for populating the `test-cases.md` file
+
 ## Getting Started
 
 ### Prerequisites
