@@ -108,7 +108,7 @@ INFLECTRA_SPIRA_API_KEY=The API Key (RSS Token) you use to access the Spira REST
 
 Note: Make sure your API Key is active and saved in your Spira user profile.
 
-### Running the Server
+### Running the Server directly
 
 ```bash
 # Development mode with the MCP Inspector
@@ -119,6 +119,70 @@ python -m mcp_server_spira
 
 # Install in Claude Desktop
 mcp install src/mcp_server_spira/server.py --name "Inflectra Spira Server"
+```
+
+### Running the MCP Server from Cline
+
+To run the MCP server from within Cline, you don't use the commands above, instead you add the Inflectra MCP server to the configuration JSON file `cline_mcp_settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "inflectra-spira": {
+      "autoApprove": [
+        "get_my_incidents",
+        "get_products",
+        "get_test_cases"
+      ],
+      "timeout": 60,
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:\\Git\\mcp-server-spira",
+        "run",
+        "main.py"
+      ],
+      "env": {
+        "INFLECTRA_SPIRA_BASE_URL": "https://mycompany.spiraservice.net",
+        "INFLECTRA_SPIRA_USERNAME": "login",
+        "INFLECTRA_SPIRA_API_KEY": "{XXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXX}"
+      },
+      "type": "stdio"
+    }
+  }
+}
+```
+
+### Running the MCP Server from Kiro
+
+To run the MCP server from within Kiro, you don't use the commands above, instead you add the Inflectra MCP server to the configuration JSON file `mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "inflectra-spira": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:\\Git\\mcp-server-spira",
+        "run",
+        "main.py"
+      ],
+      "env": {
+        "INFLECTRA_SPIRA_BASE_URL": "https://myinstance.spiraservice.net",
+        "INFLECTRA_SPIRA_USERNAME": "mylogin",
+        "INFLECTRA_SPIRA_API_KEY": "{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXX}"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "get_specification_requirements",
+        "get_specification_design",
+        "get_specification_tasks",
+        "get_specification_test_cases"
+      ]
+    }
+  }
+}
 ```
 
 ## Usage Examples
