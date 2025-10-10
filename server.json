@@ -1,0 +1,44 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.Inflectra/mcp-server-spira",
+  "description": "A Model Context Protocol (MCP) server enabling AI assistants to interact with Spira by Inflectra.",
+  "repository": {
+    "url": "https://github.com/Inflectra/mcp-server-spira",
+    "source": "github"
+  },
+  "version": "1.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "mcp-server-spira",
+      "version": "1.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "The base URL for your instance of Spira (typically https://mycompany.spiraservice.net or https://demo-xx.spiraservice.net/mycompany)",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": false,
+          "name": "INFLECTRA_SPIRA_BASE_URL"
+        },
+        {
+          "description": "The login name you use to access Spira",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": false,
+          "name": "INFLECTRA_SPIRA_USERNAME"
+        },
+        {
+          "description": "The API Key (RSS Token) you use to access the Spira REST API",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true,
+          "name": "INFLECTRA_SPIRA_API_KEY"
+        }
+      ]
+    }
+  ]
+}

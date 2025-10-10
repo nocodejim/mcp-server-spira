@@ -227,3 +227,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Built with [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
 - Uses [Inflectra Spira v7.0 REST API](https://spiradoc.inflectra.com/Developers/API-Overview/)
+
+<!-- mcp-name: io.github.Inflectra/mcp-server-spira -->
