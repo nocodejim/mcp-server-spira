@@ -192,3 +192,7 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# MCP publishing authentication tokens
+.mcpregistry_github_token
+.mcpregistry_registry_token

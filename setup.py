@@ -13,7 +13,7 @@ with io.open("README.md") as readme_file:
 # Register plugin
 setuptools.setup(
     name ='mcp-server-spira',
-    version = '1.1.0',
+    version = '1.1.1',
     author = 'Inflectra Corporation',
     author_email ='support@inflectra.com',
     url = 'https://github.com/Inflectra/mcp-server-spira',
