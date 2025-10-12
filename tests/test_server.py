@@ -20,7 +20,7 @@ async def test_server_initialization():
         assert init_result is not None
         
         # Check server name in serverInfo
-        assert init_result.serverInfo.name == "Inflectra Spira"
+        assert init_result.serverInfo.name == "inflectra-spira"
         
         # Check that the server has capabilities
         capabilities = init_result.capabilities

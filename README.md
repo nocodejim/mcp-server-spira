@@ -94,6 +94,18 @@ INFLECTRA_SPIRA_USERNAME=The login name you use to access Spira
 INFLECTRA_SPIRA_API_KEY=The API Key (RSS Token) you use to access the Spira REST API
 ```
 
+#### Selective Feature Loading
+
+To save context space and load only the features you need, you can use the `MCP_SPIRA_ENABLED_FEATURES` environment variable. This variable accepts a comma-separated list of feature names.
+
+For example, to load only the `mywork` and `workspaces` features, set the variable as follows:
+
+```
+MCP_SPIRA_ENABLED_FEATURES=mywork,workspaces
+```
+
+If this variable is not set, all features will be loaded by default. The available features are: `mywork`, `productartifacts`, `programartifacts`, `templateconfiguration`, `workspaces`, and `automation`.
+
 Note: Make sure your API Key is active and saved in your Spira user profile.
 
 ### Running the Server

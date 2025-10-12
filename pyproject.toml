@@ -9,12 +9,21 @@ keywords = ["MCP", "AI", "GenAI"]
 dependencies = [
     "httpx>=0.28.1",
     "mcp[cli]>=1.9.2",
-    "pytest>=8.4.0",
 ]
 classifiers = [
     'Topic :: Scientific/Engineering :: Artificial Intelligence',
     'Programming Language :: Python :: 3',
     'Operating System :: OS Independent',
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-anyio",
+    "pytest-mock",
+    "ruff",
+    "pyright",
+    "trio"
 ]
 
 [tool.pytest.ini_options]

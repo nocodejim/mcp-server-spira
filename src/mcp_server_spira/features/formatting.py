@@ -3,15 +3,15 @@ from mcp_server_spira.utils.general import get_execution_status_name
 
 
 def format_task(task) -> str:
-    task_info = f"""
-## Task [TK:{task['TaskId']}] - {task['Name']}
-{'' if task['Description'] is None else task['Description']}
-- **Status:** {task['TaskStatusName']}
-- **Type:** {task['TaskTypeName']}
-- **Priority:** {task['TaskPriorityName']}
-- **Due Date:** {task['EndDate']}
-"""
-    return task_info
+    lines = [
+        f"## Task [TK:{task['TaskId']}] - {task['Name']}",
+        f"{'' if task['Description'] is None else task['Description']}",
+        f"- **Status:** {task['TaskStatusName']}",
+        f"- **Type:** {task['TaskTypeName']}",
+        f"- **Priority:** {task['TaskPriorityName']}",
+        f"- **Due Date:** {task['EndDate']}",
+    ]
+    return "\n".join(lines)
 
 def format_incident(incident) -> str:
     incident_info = f"""
