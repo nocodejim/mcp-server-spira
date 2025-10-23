@@ -88,32 +88,60 @@ Each feature in the `features/` directory follows this pattern:
 
 ### Tool Implementation Pattern
 
-When implementing a new tool:
+When implementing a new tool, follow this two-function pattern:
 
-1. Define a private implementation function with `_name_impl` that takes explicit client objects:
-```python
-def _get_data_impl(client, param1, param2):
-    # Implementation
-    return formatted_result
-```
+**1. Define a private implementation function (`_name_impl`)**
 
-2. Create a public MCP tool function that handles client initialization and error handling:
+The implementation function contains the core logic and **does NOT handle exceptions**:
+
 ```python
-@mcp.tool()
-def get_data(param1, param2):
+def _get_data_impl(client, param1, param2) -> str:
     """
-    Docstring following the standard pattern.
-    
-    Use this tool when you need to:
-    - First use case
-    - Second use case
-    
+    Implementation of data retrieval.
+
     Args:
+        client: The Spira API client instance
         param1: Description
         param2: Description
-        
+
     Returns:
-        Description of the return value format
+        Formatted string containing the data
+    """
+    # Build API URL using f-strings
+    data_url = f"projects/{param1}/data/{param2}"
+
+    # Make API call
+    data = client.make_spira_api_get_request(data_url)
+
+    if not data:
+        return "No data found."
+
+    # Format and return results
+    return format_data(data)
+```
+
+**CRITICAL: Implementation functions must NOT include try-catch blocks. Let exceptions propagate naturally to the wrapper.**
+
+**2. Create a public MCP tool wrapper function**
+
+The wrapper handles client initialization and exception handling **ONLY**:
+
+```python
+@mcp.tool()
+def get_data(param1: int, param2: str) -> str:
+    """
+    Retrieves data from Spira.
+
+    Use this tool when you need to:
+    - First use case with specific example
+    - Second use case with specific example
+
+    Args:
+        param1: Description of first parameter
+        param2: Description of second parameter
+
+    Returns:
+        Formatted string containing the requested data
     """
     try:
         client = get_client()
@@ -122,7 +150,11 @@ def get_data(param1, param2):
         return f"Error: {str(e)}"
 ```
 
-3. Register the tool in the feature's `__init__.py` or `register_tools()` function
+**CRITICAL: Exception handling occurs ONLY at this wrapper level. This is the single source of error handling.**
+
+**3. Register the tool**
+
+Register the tool in the feature's `__init__.py` or `register_tools()` function
 
 ### Function Docstring Pattern
 
@@ -150,13 +182,111 @@ Returns:
 
 ### Error Handling
 
-The standard error handling pattern is:
+**CRITICAL PATTERN: Single-Level Exception Handling**
+
+Exception handling occurs at **ONE LOCATION ONLY**: the MCP tool wrapper function.
+
+#### ✅ Correct Pattern
 
 ```python
-try:
-    # Implementation code
-except Exception as e:
-    return f"Error doing operation: {str(e)}"
+# Implementation function - NO exception handling
+def _get_tasks_impl(spira_client, product_id: int) -> str:
+    """Implementation logic without try-catch."""
+    tasks_url = f"projects/{product_id}/tasks"
+    tasks = spira_client.make_spira_api_get_request(tasks_url)
+
+    if not tasks:
+        return "No tasks found."
+
+    return format_tasks(tasks)
+
+# Wrapper function - ONLY location for exception handling
+@mcp.tool()
+def get_tasks(product_id: int) -> str:
+    """Tool docstring."""
+    try:
+        spira_client = get_spira_client()
+        return _get_tasks_impl(spira_client, product_id)
+    except Exception as e:
+        return f"Error: {str(e)}"
+```
+
+#### ❌ Anti-Pattern: Double Exception Handling
+
+**DO NOT DO THIS:**
+
+```python
+# ❌ WRONG: Implementation with try-catch
+def _get_tasks_impl(spira_client, product_id: int) -> str:
+    try:  # ❌ Remove this!
+        tasks_url = f"projects/{product_id}/tasks"
+        tasks = spira_client.make_spira_api_get_request(tasks_url)
+        return format_tasks(tasks)
+    except Exception as e:  # ❌ Remove this!
+        return f"There was a problem: {e}"
+
+# ❌ WRONG: Wrapper also has try-catch (unreachable)
+@mcp.tool()
+def get_tasks(product_id: int) -> str:
+    try:
+        spira_client = get_spira_client()
+        return _get_tasks_impl(spira_client, product_id)
+    except Exception as e:  # ❌ This is never reached!
+        return f"Error: {str(e)}"
+```
+
+#### Helper Functions
+
+Helper functions should also **NOT catch exceptions**. Let them propagate:
+
+```python
+# ✅ Correct: No exception handling in helper
+def _process_folder_items(client, folder_id: int, results: list) -> None:
+    """Helper function that processes items in a folder."""
+    items_url = f"folders/{folder_id}/items"
+    items = client.make_spira_api_get_request(items_url)
+
+    for item in items:
+        results.append(format_item(item))
+    # Exceptions propagate naturally to wrapper
+
+# ❌ Wrong: Helper catches and raises
+def _process_folder_items(client, folder_id: int, results: list) -> None:
+    try:  # ❌ Remove this!
+        items_url = f"folders/{folder_id}/items"
+        items = client.make_spira_api_get_request(items_url)
+        for item in items:
+            results.append(format_item(item))
+    except Exception as e:
+        raise Exception(f"Error in helper: {e}")  # ❌ Remove this!
+```
+
+#### Silent Failures
+
+**NEVER return empty results on errors.** Let exceptions propagate:
+
+```python
+# ❌ WRONG: Silent failure
+def _get_properties(client, template_id: int) -> str:
+    try:
+        props = client.make_spira_api_get_request(f"templates/{template_id}/props")
+        return format_props(props)
+    except Exception as e:
+        return ""  # ❌ Silent failure - user gets no feedback!
+
+# ✅ CORRECT: Let exception propagate
+def _get_properties(client, template_id: int) -> str:
+    props = client.make_spira_api_get_request(f"templates/{template_id}/props")
+    return format_props(props)
+    # Exceptions propagate to wrapper for consistent handling
+```
+
+#### Error Message Format
+
+All error messages at the wrapper level must use this exact format:
+
+```python
+return f"Error: {str(e)}"
 ```
 
 For specific errors, create custom exception classes in the feature's `common.py` file.
@@ -166,19 +296,76 @@ For specific errors, create custom exception classes in the feature's `common.py
 ### Client Initialization
 
 ```python
-from mcp_server_spira.utils.spira_client import SpiraClient, get_client
+from mcp_server_spira.features.common import get_spira_client
 
-def get_spira_client() -> SpiraClient:
-    """
-    Get the Spira API client.
-    
-    Returns:
-        SpiraClient instance
-        
-    """
-    # Get Spira client
-    spira_client = get_client()        
-    return spira_client
+def _get_my_data_impl(spira_client) -> str:
+    """Implementation using the client."""
+    # Use spira_client for API calls
+    data = spira_client.make_spira_api_get_request("data")
+    return format_data(data)
+
+@mcp.tool()
+def get_my_data() -> str:
+    """Tool wrapper."""
+    try:
+        spira_client = get_spira_client()
+        return _get_my_data_impl(spira_client)
+    except Exception as e:
+        return f"Error: {str(e)}"
+```
+
+### URL Building
+
+**ALWAYS use f-strings for building API URLs.** Never use string concatenation.
+
+#### ✅ Correct: F-strings
+
+```python
+# Simple URL
+tasks_url = f"projects/{product_id}/tasks"
+
+# URL with query parameters
+tasks_url = f"projects/{product_id}/tasks?status={status}&limit={limit}"
+
+# Complex URL
+url = f"projects/{product_id}/releases/{release_id}/builds"
+
+# URL with multiple parameters
+test_url = f"projects/{product_id}/test-folders/{folder_id}/test-cases?starting_row=1&number_of_rows=1000&sort_field=Name&sort_direction=ASC"
+```
+
+#### ❌ Wrong: String Concatenation
+
+```python
+# ❌ Don't do this
+tasks_url = "projects/" + str(product_id) + "/tasks"
+
+# ❌ Don't do this
+url = "projects/" + str(product_id) + "/releases/" + str(release_id) + "/builds"
+
+# ❌ Don't do this
+test_url = "project-templates/" + str(template_id) + "/custom-properties/" + artifact_type
+```
+
+**Why f-strings?**
+- More readable and maintainable
+- Automatic type conversion (no need for `str()`)
+- Consistent with modern Python best practices
+- Easier to spot typos and errors
+
+### HTTP Method Selection
+
+Use the correct HTTP method for the operation:
+
+```python
+# ✅ GET for retrieving data
+risks = spira_client.make_spira_api_get_request(f"projects/{product_id}/risks")
+
+# ✅ POST for creating data
+build = spira_client.make_spira_api_post_request(f"projects/{product_id}/builds", body)
+
+# ❌ WRONG: POST for retrieval
+risks = spira_client.make_spira_api_post_request(f"projects/{product_id}/risks", None)
 ```
 
 ### Response Formatting
