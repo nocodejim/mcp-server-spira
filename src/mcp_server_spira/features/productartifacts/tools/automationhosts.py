@@ -13,29 +13,25 @@ def _get_automation_hosts_impl(spira_client, product_id: int) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        product_id: The numeric ID of the product. If the ID is PG:45, just use 45. 
-                
+        product_id: The numeric ID of the product. If the ID is PG:45, just use 45.
+
     Returns:
         Formatted string containing the list of automation hosts
     """
-    try:
-        # Get the list of automation hosts in the product
-        automation_hosts_url = f"projects/{product_id}/automation-hosts"
-        automation_hosts = spira_client.make_spira_api_get_request(automation_hosts_url)
+    # Get the list of automation hosts in the product
+    automation_hosts_url = f"projects/{product_id}/automation-hosts"
+    automation_hosts = spira_client.make_spira_api_get_request(automation_hosts_url)
 
-        if not automation_hosts:
-            return "There are no automation hosts for the product."
+    if not automation_hosts:
+        return "There are no automation hosts for the product."
 
-        # Format the automation hosts into human readable data
-        formatted_results = []
-        for host in automation_hosts[:25]:  # Only show first 25 automation hosts
-            host_info = format_automation_host(host)
-            formatted_results.append(host_info)
+    # Format the automation hosts into human readable data
+    formatted_results = []
+    for host in automation_hosts[:25]:  # Only show first 25 automation hosts
+        host_info = format_automation_host(host)
+        formatted_results.append(host_info)
 
-        return "\n\n".join(formatted_results)
-    
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
 
 def register_tools(mcp) -> None:
     """

@@ -13,29 +13,25 @@ def _get_incidents_impl(spira_client, product_id: int) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
-                
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45.
+
     Returns:
         Formatted string containing the list of incidents
     """
-    try:
-        # Get the list of incidents in the product
-        incidents_url = f"projects/{product_id}/incidents"
-        incidents = spira_client.make_spira_api_get_request(incidents_url)
+    # Get the list of incidents in the product
+    incidents_url = f"projects/{product_id}/incidents"
+    incidents = spira_client.make_spira_api_get_request(incidents_url)
 
-        if not incidents:
-            return "There are no incidents for the product."
+    if not incidents:
+        return "There are no incidents for the product."
 
-        # Format the incidents into human readable data
-        formatted_results = []
-        for incident in incidents:
-            incident_info = format_incident(incident)
-            formatted_results.append(incident_info)
+    # Format the incidents into human readable data
+    formatted_results = []
+    for incident in incidents:
+        incident_info = format_incident(incident)
+        formatted_results.append(incident_info)
 
-        return "\n\n".join(formatted_results)
-    
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
 
 def register_tools(mcp) -> None:
     """

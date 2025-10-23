@@ -14,27 +14,24 @@ def _get_programs_impl(spira_client) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-                
+
     Returns:
         Formatted string containing the list of available programs
     """
-    try:
-        # Get the list of available programs for the current user
-        programs_url = "programs"
-        programs = spira_client.make_spira_api_get_request(programs_url)
+    # Get the list of available programs for the current user
+    programs_url = "programs"
+    programs = spira_client.make_spira_api_get_request(programs_url)
 
-        if not programs:
-            return "There are no programs available for the current user."
+    if not programs:
+        return "There are no programs available for the current user."
 
-        # Format the programs into human readable data
-        formatted_results = []
-        for program in programs[:100]:  # Only show first 100 programs
-            program_info = format_program(program)
-            formatted_results.append(program_info)
+    # Format the programs into human readable data
+    formatted_results = []
+    for program in programs[:100]:  # Only show first 100 programs
+        program_info = format_program(program)
+        formatted_results.append(program_info)
 
-        return "\n\n".join(formatted_results)
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
     
 def register_tools(mcp) -> None:
     """

@@ -13,27 +13,24 @@ def _get_my_testsets_impl(spira_client) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-                
+
     Returns:
         Formatted string containing the list of assigned testsets
     """
-    try:
-        # Get the list of open testsets for the current user
-        testsets_url = "test-sets"
-        testsets = spira_client.make_spira_api_get_request(testsets_url)
+    # Get the list of open testsets for the current user
+    testsets_url = "test-sets"
+    testsets = spira_client.make_spira_api_get_request(testsets_url)
 
-        if not testsets:
-            return "The current user does not have any test sets."
+    if not testsets:
+        return "The current user does not have any test sets."
 
-        # Format the testsets into human readable data
-        formatted_results = []
-        for testset in testsets[:25]:  # Only show first 25 testsets
-            testset_info = format_test_set(testset)
-            formatted_results.append(testset_info)
+    # Format the testsets into human readable data
+    formatted_results = []
+    for testset in testsets[:25]:  # Only show first 25 testsets
+        testset_info = format_test_set(testset)
+        formatted_results.append(testset_info)
 
-        return "\n\n".join(formatted_results)
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
     
 def register_tools(mcp) -> None:
     """

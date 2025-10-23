@@ -13,29 +13,25 @@ def _get_releases_impl(spira_client, product_id: int) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
-                
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45.
+
     Returns:
         Formatted string containing the list of releases
     """
-    try:
-        # Get the list of releases in the product
-        releases_url = "projects/" + str(product_id) + "/releases?active_only=true"
-        releases = spira_client.make_spira_api_get_request(releases_url)
+    # Get the list of releases in the product
+    releases_url = f"projects/{product_id}/releases?active_only=true"
+    releases = spira_client.make_spira_api_get_request(releases_url)
 
-        if not releases:
-            return "There are no releases for the product."
+    if not releases:
+        return "There are no releases for the product."
 
-        # Format the releases into human readable data
-        formatted_results = []
-        for release in releases:
-            release_info = format_release(release)
-            formatted_results.append(release_info)
+    # Format the releases into human readable data
+    formatted_results = []
+    for release in releases:
+        release_info = format_release(release)
+        formatted_results.append(release_info)
 
-        return "\n\n".join(formatted_results)
-    
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
 
 def register_tools(mcp) -> None:
     """

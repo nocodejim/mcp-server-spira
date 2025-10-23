@@ -13,27 +13,24 @@ def _get_my_incidents_impl(spira_client) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-                
+
     Returns:
         Formatted string containing the list of assigned incidents
     """
-    try:
-        # Get the list of open incidents for the current user
-        incidents_url = "incidents"
-        incidents = spira_client.make_spira_api_get_request(incidents_url)
+    # Get the list of open incidents for the current user
+    incidents_url = "incidents"
+    incidents = spira_client.make_spira_api_get_request(incidents_url)
 
-        if not incidents:
-            return "The current user does not have any incidents."
+    if not incidents:
+        return "The current user does not have any incidents."
 
-        # Format the incidents into human readable data
-        formatted_results = []
-        for incident in incidents[:25]:  # Only show first 25 incidents
-            incident_info = format_incident(incident)
-            formatted_results.append(incident_info)
+    # Format the incidents into human readable data
+    formatted_results = []
+    for incident in incidents[:25]:  # Only show first 25 incidents
+        incident_info = format_incident(incident)
+        formatted_results.append(incident_info)
 
-        return "\n\n".join(formatted_results)
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
     
 def register_tools(mcp) -> None:
     """

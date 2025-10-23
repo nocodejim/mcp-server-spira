@@ -21,44 +21,41 @@ def _create_build_url_impl(spira_client, product_id: int, release_id: int, build
         name: The name of the build (usually containing the project name and the date/time of the build)
         description: The detailed description of the build (optional), what was included and why
         commits: An optional array/list of the Git hashes of the commits included in the build
-                
+
     Returns:
         The ID of the new build that was created (with 'BL' prefix)
     """
-    try:
-        # Populate the revisions object from the commits
-        revisions = []
-        if commits:
-            for commit in commits:
-                revision = {
-                    'RevisionKey': commit
-                }
-                revisions.append(revision)
+    # Populate the revisions object from the commits
+    revisions = []
+    if commits:
+        for commit in commits:
+            revision = {
+                'RevisionKey': commit
+            }
+            revisions.append(revision)
 
-        # The body we are sending
-        body = {
-            # 1=Failed, 2=Passed
-            'ProjectId': product_id,
-            'BuildStatusId': build_status_id,
-            'ReleaseId': release_id,
-            'Name': name,
-            'Description': description,
-            'Revisions': revisions            
-        }
+    # The body we are sending
+    body = {
+        # 1=Failed, 2=Passed
+        'ProjectId': product_id,
+        'BuildStatusId': build_status_id,
+        'ReleaseId': release_id,
+        'Name': name,
+        'Description': description,
+        'Revisions': revisions
+    }
 
-        # Record the test run using the API method
-        create_build_url = "projects/" + str(product_id) + "/releases/" + str(release_id) + "/builds "
-        build = spira_client.make_spira_api_post_request(create_build_url, body)
+    # Record the test run using the API method
+    create_build_url = f"projects/{product_id}/releases/{release_id}/builds"
+    build = spira_client.make_spira_api_post_request(create_build_url, body)
 
-        if not build:
-            return "The build was not recorded successfully."
+    if not build:
+        return "The build was not recorded successfully."
 
-        # Extract the new build ID
-        build_id = build['BuildId']
+    # Extract the new build ID
+    build_id = build['BuildId']
 
-        return "BL:" + str(build_id)
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return f"BL:{build_id}"
     
 def register_tools(mcp) -> None:
     """

@@ -13,29 +13,25 @@ def _get_milestones_impl(spira_client, program_id: int) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        program_id: The numeric ID of the program. If the ID is PG:45, just use 45. 
-                
+        program_id: The numeric ID of the program. If the ID is PG:45, just use 45.
+
     Returns:
         Formatted string containing the list of milestones
     """
-    try:
-        # Get the list of milestones in the program
-        milestones_url = "programs/" + str(program_id) + "/milestones"
-        milestones = spira_client.make_spira_api_get_request(milestones_url)
+    # Get the list of milestones in the program
+    milestones_url = f"programs/{program_id}/milestones"
+    milestones = spira_client.make_spira_api_get_request(milestones_url)
 
-        if not milestones:
-            return "There are no milestones in the current program."
+    if not milestones:
+        return "There are no milestones in the current program."
 
-        # Format the milestones into human readable data
-        formatted_results = []
-        for milestone in milestones:
-            milestone_info = format_milestone(milestone)
-            formatted_results.append(milestone_info)
+    # Format the milestones into human readable data
+    formatted_results = []
+    for milestone in milestones:
+        milestone_info = format_milestone(milestone)
+        formatted_results.append(milestone_info)
 
-        return "\n\n".join(formatted_results)
-    
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
 
 def register_tools(mcp) -> None:
     """

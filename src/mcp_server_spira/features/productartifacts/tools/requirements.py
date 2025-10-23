@@ -13,29 +13,25 @@ def _get_requirements_impl(spira_client, product_id: int) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
-                
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45.
+
     Returns:
         Formatted string containing the list of requirements
     """
-    try:
-        # Get the list of requirements in the product
-        requirements_url = f"projects/{product_id}/requirements?starting_row=1&number_of_rows=500"
-        requirements = spira_client.make_spira_api_get_request(requirements_url)
+    # Get the list of requirements in the product
+    requirements_url = f"projects/{product_id}/requirements?starting_row=1&number_of_rows=500"
+    requirements = spira_client.make_spira_api_get_request(requirements_url)
 
-        if not requirements:
-            return "There are no requirements for the product."
+    if not requirements:
+        return "There are no requirements for the product."
 
-        # Format the requirements into human readable data
-        formatted_results = []
-        for requirement in requirements:
-            requirement_info = format_requirement(requirement)
-            formatted_results.append(requirement_info)
+    # Format the requirements into human readable data
+    formatted_results = []
+    for requirement in requirements:
+        requirement_info = format_requirement(requirement)
+        formatted_results.append(requirement_info)
 
-        return "\n\n".join(formatted_results)
-    
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
 
 def register_tools(mcp) -> None:
     """

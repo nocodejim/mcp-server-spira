@@ -14,33 +14,29 @@ def _get_test_sets_impl(spira_client, product_id: int) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
-                
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45.
+
     Returns:
         Formatted string containing the list of test sets, grouped by folder
     """
-    try:
-        formatted_results = []
+    formatted_results = []
 
-        # First we need to get any test sets not in a folder
-        _get_test_sets_in_folder(spira_client, product_id, formatted_results, None)
+    # First we need to get any test sets not in a folder
+    _get_test_sets_in_folder(spira_client, product_id, formatted_results, None)
 
-        # Get the entire test set folder hierarchy in the product
-        test_set_folders_url = f"projects/{product_id}/test-set-folders"
-        test_set_folders = spira_client.make_spira_api_get_request(test_set_folders_url)
+    # Get the entire test set folder hierarchy in the product
+    test_set_folders_url = f"projects/{product_id}/test-set-folders"
+    test_set_folders = spira_client.make_spira_api_get_request(test_set_folders_url)
 
-        # Loop through all the test set folders and format
-        for test_set_folder in test_set_folders:
-            test_set_folder_info = format_test_set_folder(test_set_folder)
-            formatted_results.append(test_set_folder_info)
+    # Loop through all the test set folders and format
+    for test_set_folder in test_set_folders:
+        test_set_folder_info = format_test_set_folder(test_set_folder)
+        formatted_results.append(test_set_folder_info)
 
-            # Now get all of the test sets in the folder
-            _get_test_sets_in_folder(spira_client, product_id, formatted_results, test_set_folder)
+        # Now get all of the test sets in the folder
+        _get_test_sets_in_folder(spira_client, product_id, formatted_results, test_set_folder)
 
-        return "\n\n".join(formatted_results)
-    
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
 
 def _get_test_sets_in_folder(spira_client, product_id: int, formatted_results: list[str], test_set_folder):
     """
@@ -48,29 +44,25 @@ def _get_test_sets_in_folder(spira_client, product_id: int, formatted_results: l
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
-                
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45.
+
     Returns:
         Formatted string containing the list of test sets, grouped by folder
     """
-    try:
-        # Get the test set folder id
-        test_set_folder_id = 'null'
-        release_id = 'null'
-        if test_set_folder:
-            test_set_folder_id = str(test_set_folder['TestSetFolderId'])
+    # Get the test set folder id
+    test_set_folder_id = 'null'
+    release_id = 'null'
+    if test_set_folder:
+        test_set_folder_id = str(test_set_folder['TestSetFolderId'])
 
-        # Get the test sets in the folder
-        test_sets_url = f"projects/{product_id}/test-set-folders/{test_set_folder_id}/test-sets?starting_row=1&number_of_rows=1000&sort_field=Name&sort_direction=ASC&release_id={release_id}"
-        test_sets = spira_client.make_spira_api_get_request(test_sets_url)
+    # Get the test sets in the folder
+    test_sets_url = f"projects/{product_id}/test-set-folders/{test_set_folder_id}/test-sets?starting_row=1&number_of_rows=1000&sort_field=Name&sort_direction=ASC&release_id={release_id}"
+    test_sets = spira_client.make_spira_api_get_request(test_sets_url)
 
-        # Loop through all the test sets and format
-        for test_set in test_sets:
-            test_set_info = format_test_set(test_set)
-            formatted_results.append(test_set_info)
-
-    except Exception as e:
-        raise Exception(f"Error returned when getting the test sets in the folder. The error message was: {e}")
+    # Loop through all the test sets and format
+    for test_set in test_sets:
+        test_set_info = format_test_set(test_set)
+        formatted_results.append(test_set_info)
 
 def register_tools(mcp) -> None:
     """

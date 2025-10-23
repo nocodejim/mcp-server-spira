@@ -13,29 +13,25 @@ def _get_capabilities_impl(spira_client, program_id: int) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        program_id: The numeric ID of the program. If the ID is PG:45, just use 45. 
-                
+        program_id: The numeric ID of the program. If the ID is PG:45, just use 45.
+
     Returns:
         Formatted string containing the list of capabilities
     """
-    try:
-        # Get the list of capabilities in the program
-        capabilities_url = f"programs/{program_id}/capabilities/search?current_page=1&page_size=500"
-        capabilities = spira_client.make_spira_api_get_request(capabilities_url)
+    # Get the list of capabilities in the program
+    capabilities_url = f"programs/{program_id}/capabilities/search?current_page=1&page_size=500"
+    capabilities = spira_client.make_spira_api_get_request(capabilities_url)
 
-        if not capabilities:
-            return "There are no capabilities in the specified program."
+    if not capabilities:
+        return "There are no capabilities in the specified program."
 
-        # Format the capabilities into human readable data
-        formatted_results = []
-        for capability in capabilities:
-            capability_info = format_capability(capability)
-            formatted_results.append(capability_info)
+    # Format the capabilities into human readable data
+    formatted_results = []
+    for capability in capabilities:
+        capability_info = format_capability(capability)
+        formatted_results.append(capability_info)
 
-        return "\n\n".join(formatted_results)
-    
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
 
 def register_tools(mcp) -> None:
     """

@@ -13,27 +13,24 @@ def _get_my_requirements_impl(spira_client) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-                
+
     Returns:
         Formatted string containing the list of assigned requirements
     """
-    try:
-        # Get the list of open requirements for the current user
-        requirements_url = "requirements"
-        requirements = spira_client.make_spira_api_get_request(requirements_url)
+    # Get the list of open requirements for the current user
+    requirements_url = "requirements"
+    requirements = spira_client.make_spira_api_get_request(requirements_url)
 
-        if not requirements:
-            return "The current user does not have any requirements."
+    if not requirements:
+        return "The current user does not have any requirements."
 
-        # Format the requirements into human readable data
-        formatted_results = []
-        for requirement in requirements[:25]:  # Only show first 25 requirements
-            requirement_info = format_requirement(requirement)
-            formatted_results.append(requirement_info)
+    # Format the requirements into human readable data
+    formatted_results = []
+    for requirement in requirements[:25]:  # Only show first 25 requirements
+        requirement_info = format_requirement(requirement)
+        formatted_results.append(requirement_info)
 
-        return "\n\n".join(formatted_results)
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
     
 def register_tools(mcp) -> None:
     """

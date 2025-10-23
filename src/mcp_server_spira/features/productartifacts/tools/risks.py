@@ -13,29 +13,25 @@ def _get_risks_impl(spira_client, product_id: int) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
-                
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45.
+
     Returns:
         Formatted string containing the list of risks
     """
-    try:
-        # Get the list of risks in the product
-        risks_url = f"projects/{product_id}/risks?starting_row=1&number_of_rows=500&sort_field=CreationDate&sort_direction=DESC"
-        risks = spira_client.make_spira_api_post_request(risks_url, None)
+    # Get the list of risks in the product
+    risks_url = f"projects/{product_id}/risks?starting_row=1&number_of_rows=500&sort_field=CreationDate&sort_direction=DESC"
+    risks = spira_client.make_spira_api_get_request(risks_url)
 
-        if not risks:
-            return "There are no risks for the product."
+    if not risks:
+        return "There are no risks for the product."
 
-        # Format the risks into human readable data
-        formatted_results = []
-        for risk in risks:
-            risk_info = format_risk(risk)
-            formatted_results.append(risk_info)
+    # Format the risks into human readable data
+    formatted_results = []
+    for risk in risks:
+        risk_info = format_risk(risk)
+        formatted_results.append(risk_info)
 
-        return "\n\n".join(formatted_results)
-    
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
 
 def register_tools(mcp) -> None:
     """

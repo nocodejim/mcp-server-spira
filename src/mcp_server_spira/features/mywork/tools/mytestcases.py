@@ -13,27 +13,24 @@ def _get_my_testcases_impl(spira_client) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-                
+
     Returns:
         Formatted string containing the list of assigned test cases
     """
-    try:
-        # Get the list of open testcases for the current user
-        testcases_url = "test-cases"
-        testcases = spira_client.make_spira_api_get_request(testcases_url)
+    # Get the list of open testcases for the current user
+    testcases_url = "test-cases"
+    testcases = spira_client.make_spira_api_get_request(testcases_url)
 
-        if not testcases:
-            return "The current user does not have any test cases."
+    if not testcases:
+        return "The current user does not have any test cases."
 
-        # Format the testcases into human readable data
-        formatted_results = []
-        for testcase in testcases[:25]:  # Only show first 25 testcases
-            testcase_info = format_test_case(testcase)
-            formatted_results.append(testcase_info)
+    # Format the testcases into human readable data
+    formatted_results = []
+    for testcase in testcases[:25]:  # Only show first 25 testcases
+        testcase_info = format_test_case(testcase)
+        formatted_results.append(testcase_info)
 
-        return "\n\n".join(formatted_results)
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
     
 def register_tools(mcp) -> None:
     """

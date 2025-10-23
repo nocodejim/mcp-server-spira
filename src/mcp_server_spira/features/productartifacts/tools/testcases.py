@@ -14,33 +14,29 @@ def _get_test_cases_impl(spira_client, product_id: int) -> str:
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
-                
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45.
+
     Returns:
         Formatted string containing the list of test cases, grouped by folder
     """
-    try:
-        formatted_results = []
+    formatted_results = []
 
-        # First we need to get any test cases not in a folder
-        _get_test_cases_in_folder(spira_client, product_id, formatted_results, None)
+    # First we need to get any test cases not in a folder
+    _get_test_cases_in_folder(spira_client, product_id, formatted_results, None)
 
-        # Get the entire test case folder hierarchy in the product
-        test_case_folders_url = f"projects/{product_id}/test-folders"
-        test_case_folders = spira_client.make_spira_api_get_request(test_case_folders_url)
+    # Get the entire test case folder hierarchy in the product
+    test_case_folders_url = f"projects/{product_id}/test-folders"
+    test_case_folders = spira_client.make_spira_api_get_request(test_case_folders_url)
 
-        # Loop through all the test case folders and format
-        for test_case_folder in test_case_folders:
-            test_case_folder_info = format_test_case_folder(test_case_folder)
-            formatted_results.append(test_case_folder_info)
+    # Loop through all the test case folders and format
+    for test_case_folder in test_case_folders:
+        test_case_folder_info = format_test_case_folder(test_case_folder)
+        formatted_results.append(test_case_folder_info)
 
-            # Now get all of the test cases in the folder
-            _get_test_cases_in_folder(spira_client, product_id, formatted_results, test_case_folder)
+        # Now get all of the test cases in the folder
+        _get_test_cases_in_folder(spira_client, product_id, formatted_results, test_case_folder)
 
-        return "\n\n".join(formatted_results)
-    
-    except Exception as e:
-        return f"There was a problem using this tool: {e}"
+    return "\n\n".join(formatted_results)
 
 def _get_test_cases_in_folder(spira_client, product_id: int, formatted_results: list[str], test_case_folder):
     """
@@ -48,29 +44,25 @@ def _get_test_cases_in_folder(spira_client, product_id: int, formatted_results: 
 
     Args:
         spira_client: The Inflectra Spira API client instance
-        product_id: The numeric ID of the product. If the ID is PR:45, just use 45. 
-                
+        product_id: The numeric ID of the product. If the ID is PR:45, just use 45.
+
     Returns:
         Formatted string containing the list of test cases, grouped by folder
     """
-    try:
-        # Get the test case folder id
-        test_case_folder_id = 'null'
-        release_id = 'null'
-        if test_case_folder:
-            test_case_folder_id = str(test_case_folder['TestCaseFolderId'])
+    # Get the test case folder id
+    test_case_folder_id = 'null'
+    release_id = 'null'
+    if test_case_folder:
+        test_case_folder_id = str(test_case_folder['TestCaseFolderId'])
 
-        # Get the test cases in the folder
-        test_cases_url = f"projects/{product_id}/test-folders/{test_case_folder_id}/test-cases?starting_row=1&number_of_rows=1000&sort_field=Name&sort_direction=ASC&release_id={release_id}"
-        test_cases = spira_client.make_spira_api_get_request(test_cases_url)
+    # Get the test cases in the folder
+    test_cases_url = f"projects/{product_id}/test-folders/{test_case_folder_id}/test-cases?starting_row=1&number_of_rows=1000&sort_field=Name&sort_direction=ASC&release_id={release_id}"
+    test_cases = spira_client.make_spira_api_get_request(test_cases_url)
 
-        # Loop through all the test cases and format
-        for test_case in test_cases:
-            test_case_info = format_test_case(test_case)
-            formatted_results.append(test_case_info)
-
-    except Exception as e:
-        raise Exception(f"Error returned when getting the test cases in the folder. The error message was: {e}")
+    # Loop through all the test cases and format
+    for test_case in test_cases:
+        test_case_info = format_test_case(test_case)
+        formatted_results.append(test_case_info)
 
 def register_tools(mcp) -> None:
     """
